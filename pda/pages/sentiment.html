@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Sentiment</title>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/d3.v3.min.js"></script>
+    <style type="text/css">
+        .bar.positive {
+          fill: steelblue;
+        }
+
+        .bar.negative {
+          fill: brown;
+        }
+
+        .axis text {
+          font: 10px sans-serif;
+        }
+
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
+    </style>
+</head>
+{% autoescape off %}
+<body>
+	{% include "header.html" %}
+	<article style='margin-top:60px'>
+	<div id="users" class="btn-group btn-group-justified" role="group" aria-label="...">
+    </div>
+    <div id="sentiment"></div>
+    </article>
+
+     <div id="wc" style="border:1px;margin-left:auto;margin-right:auto;width:950px;height:550px;text-align : center;">
+        <img id='loading' src="/img/loadingwordcloud.gif" style="margin-top:60px;">
+    </div>
+</body>
+<script type="text/javascript">
+	$(function(){
+        var json = {{ collections }}; 
+        var collections = json.titles;
+        for (var i = 0; i < collections.length; i++){
+            $("#users").append('<div class="btn-group" role="group"><button type="button" class="btn btn-default" id="'+collections[i]+'" onClick="sentimentanalysis(\''+collections[i]+'\')">@'+collections[i]+'</button></div>');
+        }
+        $("#loading").hide();
+    });
+
+    var sentimentanalysis = function(user){
+        $('svg').remove();
+        $("#loading").show();
+    	$.ajax({
+    		url: '/getsentiment?id='+user,
+    		type: 'GET',
+    	})
+    	.done(function(data) {
+            data = JSON.parse(data);
+            var margin = {top: 30, right: 10, bottom: 10, left: 10},
+            width = 960 - margin.left - margin.right,
+            height = data.length * 30
+
+            var x = d3.scale.linear()
+                .range([0, width]);
+
+            var y = d3.scale.ordinal()
+                .rangeRoundBands([0, height], .2);
+
+            var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("top");
+            $("#loading").hide();
+            var svg = d3.select("#wc").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+               .append("g")
+                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            x.domain(d3.extent(data, function(d) { return d.value; })).nice();
+            y.domain(data.map(function(d) { return d.name; })); 
+
+            var count = -30;
+
+            var bar = svg.selectAll("g").data(data).enter().append("g");
+               
+
+            bar.append("rect")
+              .attr("class", function(d) { return d.value < 0 ? "bar negative" : "bar positive"; })
+              .attr("x", function(d) { return x(Math.min(0, d.value)); })
+              .attr("y", function(d) { count = count + 30; return count; })
+              .attr("width", function(d) { return Math.abs(x(d.value) - x(0)); })
+              .attr("height", '20px');
+
+            var textcount= -30;
+            bar.append("text")
+              .attr("x", function(d) { return x(Math.min(0, d.value)); })
+              .attr("y", function(d) { textcount = textcount + 30; return textcount; })
+              .attr("dx", function(d) { return d.value < 0 ? "-0.5em" : "0.5em"; })
+              .attr("dy", "1em")
+              .text(function(d) { return d.time; });
+
+
+            svg.append("g")
+              .attr("class", "x axis")
+              .call(xAxis);
+
+            svg.append("g")
+              .attr("class", "y axis")
+            .append("line")
+              .attr("x1", x(0))
+              .attr("x2", x(0))
+              .attr("y2", height);  
+    	});
+    };
+
+    function type(d) {
+        d.value = +d.value;
+        return d;
+    }
+
+</script>
+{% endautoescape %}
+</html>

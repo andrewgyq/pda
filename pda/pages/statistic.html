@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>statistic</title>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>	
+	<script src="/js/Chart.js"></script>
+	<style type="text/css">
+		.stats{border:1px ;display:inline-block; margin-left: 10px; width:420px; height:400px; text-align: center;}
+	</style>
+</head>
+{% autoescape off %}
+<body>
+	{% include "header.html" %}
+	<article style="margin-top:65px">
+    <div id="users" class="btn-group btn-group-justified" role="group" aria-label="...">
+    </div>
+    <div id="sta" style="border:1px;margin-left:auto;margin-right:auto;width:1300px">
+		<div class="stats">
+			<h4>Who you communicate with more often?</h4>
+			<canvas id="barChart" width="380px" height="330px"></canvas>
+		</div>
+
+		<div class="stats">
+			<h4>When you post your tweets?</h4>
+			<canvas id="lineChart" width="380px" height="330px"></canvas>
+		</div>
+
+		<div class="stats">
+			<h4>Source</h4>
+			<canvas id="pieChart" width="380px" height="330px"></canvas>
+		</div>
+	</div>
+    </article>
+
+	
+</body>
+<script type="text/javascript">
+	$(function(){
+        var json = {{ collections }}; 
+    	var collections = json.titles;
+        for (var i = 0; i < collections.length; i++){
+            $("#users").append('<div class="btn-group" role="group"><button type="button" class="btn btn-default" id="'+collections[i]+'" onClick="showstats(\''+collections[i]+'\')">@'+collections[i]+'</button></div>');
+        }
+    });
+
+    var showstats = function(user){
+    	$("button").attr("class", "btn btn-default");
+    	$("#"+user).attr("class", "btn btn-default active");
+
+    	$.ajax({
+    		url: '/getstatistic?id='+user,
+    		type: 'GET',
+    	})
+    	.done(function(data) {
+    		var statsdata = JSON.parse(data);
+    		var bardata = {
+			labels : statsdata.at,
+			datasets : [
+				{
+					fillColor : "rgba(220,220,220,0.5)",
+					strokeColor : "rgba(220,220,220,1)",
+					data : statsdata.value
+				}
+			]
+			};
+			var bar = document.getElementById("barChart").getContext("2d");
+			new Chart(bar).Bar(bardata);
+
+			var linedata = {
+			    labels: ["00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "24:00"],
+			    datasets: [
+			        {
+			            fillColor: "rgba(220,220,220,0.2)",
+			            strokeColor: "rgba(220,220,220,1)",
+			            pointColor: "rgba(220,220,220,1)",
+			            pointStrokeColor: "#fff",
+			            pointHighlightFill: "#fff",
+			            pointHighlightStroke: "rgba(220,220,220,1)",
+			            data: statsdata.time
+			        }
+			    ]
+			};
+			var line = document.getElementById("lineChart").getContext("2d");
+			new Chart(line).Line(linedata);
+
+			var piedata = [];
+			for(var item in statsdata.source){
+				var temp = document.createElement("a");
+				temp.innerHTML = item;
+				var object = {
+					value: parseInt(statsdata.source[item]),
+					color: getRandomColor(),
+					highlight: getRandomColor(),
+					label: temp.textContent
+				};
+				piedata.push(object);
+			}
+
+			var pie = document.getElementById("pieChart").getContext("2d");
+			new Chart(pie).Pie(piedata);
+    	});
+    };
+
+	var getRandomColor = function() {
+	    var letters = '0123456789ABCDEF'.split('');
+	    var color = '#';
+	    for (var i = 0; i < 6; i++ ) {
+	        color += letters[Math.floor(Math.random() * 16)];
+	    }
+	    return color;
+	}
+
+
+</script>
+{% endautoescape %}
+</html>

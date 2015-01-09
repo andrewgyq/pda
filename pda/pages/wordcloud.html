@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>word cloud</title>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/js/d3.js"></script>
+    <script type="text/javascript" src="/js/d3.layout.cloud.js"></script>
+</head>
+{% autoescape off %}
+<body>
+	{% include "header.html" %}
+    <article style="margin-top:65px">
+    <div id="users" class="btn-group btn-group-justified" role="group" aria-label="...">
+     <!--  <div class="btn-group" role="group">
+        <button type="button" class="btn btn-default">Left</button>
+      </div>  -->
+    </div>
+    </article>
+    
+    <div id="wc" style="border:1px;margin-left:auto;margin-right:auto;width:950px;height:550px;text-align : center;">
+        <img id='loading' src="/img/loadingwordcloud.gif" style="margin-top:60px;">
+    </div>
+	<script type="text/javascript">
+        $(function(){
+            var json = {{ collections }}; 
+            var collections = json.titles;
+            for (var i = 0; i < collections.length; i++){
+                $("#users").append('<div class="btn-group" role="group"><button type="button" class="btn btn-default" id="'+collections[i]+'" onClick="drawwordcloud(\''+collections[i]+'\')">@'+collections[i]+'</button></div>');
+            }
+            $("#loading").hide();
+        });
+
+        var drawwordcloud = function(user){
+            $("button").attr("class", "btn btn-default");
+            $("#"+user).attr("class", "btn btn-default active");
+            var fill = d3.scale.category20();
+            $( "svg" ).remove();
+            $("#loading").show();
+            $.ajax({
+                url: '/getwordcloud?id='+user,
+                type: 'GET'
+            })
+            .done(function(data) {
+                $("#loading").hide();
+                var wordcounts = JSON.parse(data);
+                d3.layout.cloud().size([950, 550])
+                .words(wordcounts)
+                .padding(5)
+                .rotate(function() { return ~~(Math.random() * 2) * 90; })
+                .font("Impact")
+                .fontSize(function(d) { return d.size; })
+                .on("end", draw)
+                .start();
+
+                function draw(words) {
+                    d3.select("#wc").append("svg")
+                    .attr("width", 950)
+                    .attr("height", 550)
+                    .append("g")
+                    .attr("transform", "translate(475,275)")
+                    .selectAll("text")
+                    .data(words)
+                    .enter().append("text")
+                    .style("font-size", function(d) { return d.size  + "px"; })
+                    .style("font-family", "Impact")
+                    .style("fill", function(d, i) { return fill(i); })
+                    .attr("text-anchor", "middle")
+                    .attr("transform", function(d) {
+                      return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                    })
+                    .text(function(d) { return d.text; });
+                }
+            });
+        };
+
+    </script>
+</body>
+{% endautoescape %}
+</html>

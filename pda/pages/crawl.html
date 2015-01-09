@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Crawling Data</title>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+  <script type="text/javascript" src="/js/jquery.min.js"></script>
+  <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  <style type="text/css">
+    body{background-color: #333;}
+    .logo{float: left; margin: 0 18px 0 0;}
+    form{float: left; background-color: #fff; padding: 5px;}
+    .search-box{position: absolute; top: 200px; left: 400px;}
+    .search-input-text{border: 0px; float: left; outline: none;width: 350px; height: 25px; line-height: 25px;}
+    .search-input-submit{border: 0px; float: left; width: 60px; height: 29px;}
+    .loading{margin-left: 4px; margin-top: 4px; width: 30px; height: 30px;}
+    .search-sina{position: absolute; top: 300px; left: 400px;}
+  </style>
+	<script type="text/javascript">
+      $(document).ready(function() {
+        $("#loading").hide();
+        $("#loading-sina").hide();
+        $("#button1").hide();
+        $("#button2").hide();
+
+        $("#submit").click(function() {
+          var text = $("#search_input").val();
+          if(!text){
+            alert("please input screen_name!");
+            return false;
+          }
+
+          $("#loading").show();
+
+          $.get( "/savetwitter?id="+text, function( data ) {
+            $("#loading").hide();
+            $("#button1").show();
+            document.getElementById('search_input').value = null;
+            alert(data);
+          });
+        });
+
+        $("#submit-sina").click(function() {
+          var text = $("#search_input-sina").val();
+          if(!text){
+            alert("please input screen_name!");
+            return false;
+          }
+
+          $("#loading-sina").show();
+
+          $.get( "/savesina?id="+text, function( data ) {
+            $("#loading-sina").hide();
+            $("#button2").show();
+            document.getElementById('search_input-sina').value = null;
+            alert(data)
+          });
+
+        });
+      });
+
+		var gotodata = function(){
+        	window.location = '/data';
+        }
+	</script>
+</head>
+<body>
+
+{% include "header.html" %}
+
+<article style='margin-top:80px'>
+  <div class="search-box">
+    <div class="logo"><img src="/img/twitter.png" width="107px" height="40px"></div>
+    <form class="search-form" id="search-form">
+        <input type="text" class="search-input-text" id="search_input" name="id" />
+        <input id="submit" type="button" class="search-input-submit" value="crawl" />
+    </form>
+    <img id="loading" class="loading" src="/img/loading.gif" /> 
+    <button id="button1" type="button"  style="margin-left: 16px;  height:38px;" onclick="gotodata()">View</button>
+  </div>
+
+  <div id="sina" class="search-sina">
+    <div class="logo"><img src="/img/sina.jpg" width="107px" height="40px"></div>
+    <form class="search-form" id="search-form">
+        <input type="text" class="search-input-text" id="search_input-sina" name="id" />
+        <input id="submit-sina" type="button" class="search-input-submit" value="crawl" />
+    </form>
+    <img id="loading-sina" class="loading" src="/img/loading.gif" /> 
+    <button id="button2" type="button"  style="margin-left: 16px;  height:38px;" onclick="gotodata()">View</button>
+  </div>
+
+  <>
+</article>
+    
+</body>
+</html>

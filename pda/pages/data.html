@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dataset</title>
+    <link rel="stylesheet" type="text/css" href="/css/gray/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/css/icon.css">
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.easyui.min.js"></script>
+    <style type="text/css">
+        .panel-body{padding: 0px}
+    </style>
+</head>
+{% autoescape off %}
+<body >
+    {% include "header.html" %}
+
+    <article style='margin-top:50px'>
+        <div id="tab" class="easyui-tabs" style="width:100%;height:700px">
+            <!-- <div title="王俪婷OliviaOng" style="padding:1px">
+                <table class="easyui-datagrid" 
+                       data-options="singleSelect:true, fit:true, url:'/getData?id=王俪婷OliviaOng',
+                                     method:'get', rownumbers:true,
+                                     pagination:true, pageSize:20 ">
+                <thead>
+                    <tr>
+                        <th data-options="field:'text',width:900">text</th>
+                        <th data-options="field:'created_at',width:220,align:'right'">post time</th>
+                        <th data-options="field:'sentiment',width:100,align:'center'">sentiment score</th>
+                    </tr>
+                </thead>
+            </table>
+            </div> -->
+        </div>
+    </article>
+    
+</body>
+<script type="text/javascript">
+    var json = {{ collections }}; 
+    var collections = json.titles;
+    for (var i = 0; i < collections.length; i++){
+        $("#tab").append('<div title="'+collections[i]+'" style="padding:1px"><table class="easyui-datagrid" data-options="singleSelect:true, fit:true, method:\'get\', rownumbers:false, pagination:true, pageSize:20, url:\'/getData?id='+collections[i]+'\' "> <thead><tr><th data-options="field:\'text\',width:1200">text</th><th data-options="field:\'sentiment\',width:100,align:\'center\'">sentiment score</th>');
+    }  
+</script>
+{% endautoescape %}
+</html>
