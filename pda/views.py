@@ -13,10 +13,14 @@ from wordcloud import getwordcounts
 from weibo import getweibo
 from twitter import gettwitter
 from utils import get_all_collection_name
+from ldautils import preprocess
 
 client = MongoClient('localhost', 27017)
 db = client.twitter
 db_weibo = client.weibo
+
+def test(request):
+	return render(request, 'ldatest.html')
 
 def index(request):
 	return render(request, 'index.html')
@@ -60,6 +64,7 @@ def sentiment(request):
 	collections = get_all_collection_name(1)
 	json_data = json.dumps({'titles': collections})
 	return render(request, 'sentiment.html', {'collections':json_data})
+
 	
 def get_sentiment(request):
 	twitter_id = request.GET.get('id')
@@ -88,6 +93,17 @@ def get_statistic(request):
 	cursor = db[twitter_id].find(fields = {'_id': False, 'text': True, 'created_at': True, 'source':True})
 	context = getstatistic(cursor)
 	return HttpResponse(json.dumps(context))
+
+def lda(request):
+	collections = get_all_collection_name(1)
+	json_data = json.dumps({'titles': collections})
+	return render(request, 'lda.html', {'collections':json_data})
+
+def get_lda(request):
+	twitter_id = request.GET.get('id')
+	cursor = db[twitter_id].find(fields = {'_id': False, 'text': True})
+	topic_list = preprocess(cursor, twitter_id)
+	return HttpResponse(json.dumps(topic_list))
 
 def savesina(request):
 	weibo_id = request.GET.get('id')

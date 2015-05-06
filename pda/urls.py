@@ -51,6 +51,12 @@ urlpatterns = patterns('',
 
     url(r'^removedb', views.removedb, name='removedb'),
 
+    url(r'^lda', views.lda, name='lda'),
+
+    url(r'^test', views.test, name='test'),
+
+    url(r'^getlda', views.get_lda, name='getlda'),
+
 
 
 )
